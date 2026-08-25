@@ -32,3 +32,7 @@ pytest-qt==4.4.0
 pytest-cov==4.1.0
 faker==22.0.0
 python-decouple==3.8
+
+
+fastapi==0.115.0
+uvicorn==0.30.6
