@@ -3,6 +3,8 @@ from . import db_path  # noqa: F401
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
+from fastapi import Depends
+from .auth import require_roles, require_staff_or_self
 from pydantic import BaseModel as PydanticModel
 
 from finance_models import Invoice
@@ -12,13 +14,13 @@ router = APIRouter()
 
 
 @router.get("/invoices")
-def list_invoices():
+def list_invoices(user: dict = Depends(require_roles("Administrator", "Manager", "Finance Manager"))):
     invoices = Invoice.get_all_invoices()
     return [i.to_dict() for i in invoices]
 
 
 @router.get("/tenants/{tenant_id}/invoices")
-def list_invoices_for_tenant(tenant_id: int):
+def list_invoices_for_tenant(tenant_id: int, user: dict = Depends(require_staff_or_self("Administrator", "Manager", "Finance Manager"))):
     invoices = Invoice.get_invoices_for_tenant(tenant_id)
     return [i.to_dict() for i in invoices]
 
@@ -32,7 +34,7 @@ class InvoiceCreateRequest(PydanticModel):
 
 
 @router.post("/invoices", status_code=201)
-def create_invoice(payload: InvoiceCreateRequest):
+def create_invoice(payload: InvoiceCreateRequest, user: dict = Depends(require_roles("Administrator", "Finance Manager"))):
     invoice_id = Invoice.create_invoice(
         lease_id=payload.lease_id,
         amount=payload.amount,
@@ -53,7 +55,7 @@ class InvoiceUpdateRequest(PydanticModel):
 
 
 @router.patch("/invoices/{invoice_id}")
-def update_invoice(invoice_id: int, payload: InvoiceUpdateRequest):
+def update_invoice(invoice_id: int, payload: InvoiceUpdateRequest, user: dict = Depends(require_roles("Administrator", "Finance Manager"))):
     updated = Invoice(invoiceID=invoice_id).update_invoice(
         amount=payload.amount,
         due_date=payload.due_date,
@@ -66,19 +68,21 @@ def update_invoice(invoice_id: int, payload: InvoiceUpdateRequest):
 
 
 @router.post("/invoices/{invoice_id}/mark-paid")
-def mark_invoice_paid(invoice_id: int):
+def mark_invoice_paid(invoice_id: int, user: dict = Depends(require_roles("Administrator", "Finance Manager"))):
     updated = Invoice(invoiceID=invoice_id).mark_invoice_paid()
     if not updated:
         raise HTTPException(status_code=400, detail="Could not mark invoice as paid")
     return {"invoiceID": invoice_id, "status": "Paid"}
+
+
 @router.get("/payments")
-def list_payments():
+def list_payments(user: dict = Depends(require_roles("Administrator", "Manager", "Finance Manager"))):
     payments = Payment.get_all_payments()
     return [p.to_dict() for p in payments]
 
 
 @router.get("/tenants/{tenant_id}/payments")
-def list_payments_for_tenant(tenant_id: int):
+def list_payments_for_tenant(tenant_id: int, user: dict = Depends(require_staff_or_self("Administrator", "Manager", "Finance Manager"))):
     payments = Payment.get_payments_for_tenant(tenant_id)
     return [p.to_dict() for p in payments]
 
@@ -92,7 +96,7 @@ class PaymentCreateRequest(PydanticModel):
 
 
 @router.post("/payments", status_code=201)
-def create_payment(payload: PaymentCreateRequest):
+def create_payment(payload: PaymentCreateRequest, user: dict = Depends(require_roles("Administrator", "Finance Manager"))):
     payment_id, receipt = Payment.create_payment(
         invoice_id=payload.invoice_id,
         amount_paid=payload.amount_paid,
@@ -113,7 +117,7 @@ class PaymentUpdateRequest(PydanticModel):
 
 
 @router.patch("/payments/{payment_id}")
-def update_payment(payment_id: int, payload: PaymentUpdateRequest):
+def update_payment(payment_id: int, payload: PaymentUpdateRequest, user: dict = Depends(require_roles("Administrator", "Finance Manager"))):
     updated = Payment(payment_id=payment_id).update_payment(
         amount_paid=payload.amount_paid,
         payment_method=payload.payment_method,

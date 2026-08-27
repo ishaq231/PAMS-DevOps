@@ -3,8 +3,10 @@ from . import db_path  # noqa: F401
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
+from fastapi import Depends
 from pydantic import BaseModel as PydanticModel
 from .common import get_or_404
+from .auth import require_roles, require_staff_or_self
 
 from tenant_models import Tenant
 from user_models import User as UserAccount
@@ -13,7 +15,7 @@ router = APIRouter()
 
 
 @router.get("/tenants")
-def list_tenants():
+def list_tenants(user: dict = Depends(require_roles("Administrator", "Manager", "Front Desk Staff", "Finance Manager"))):
     tenants = Tenant.get_all_tenants()
     result = []
     for t in tenants:
@@ -24,7 +26,7 @@ def list_tenants():
 
 
 @router.get("/tenants/{tenant_id}")
-def get_tenant(tenant_id: int):
+def get_tenant(tenant_id: int, user: dict = Depends(require_staff_or_self("Administrator", "Manager", "Front Desk Staff", "Finance Manager"))):
     tenant = get_or_404(
         Tenant(tenant_id=tenant_id).get_tenant_profile(),
         "Tenant not found",
@@ -46,7 +48,7 @@ class TenantCreateRequest(PydanticModel):
 
 
 @router.post("/tenants", status_code=201)
-def create_tenant(payload: TenantCreateRequest):
+def create_tenant(payload: TenantCreateRequest, user: dict = Depends(require_roles("Administrator", "Front Desk Staff"))):
     new_id = UserAccount.admin_add_user(
         fname=payload.fname,
         lname=payload.lname,
