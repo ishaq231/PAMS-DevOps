@@ -1,8 +1,8 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { getNavItems } from "../lib/nav";
-import { Sidebar } from "./components/Sidebar";
-import { HeaderBar } from "./components/HeaderBar";
+import { Sidebar } from "./Sidebar";
+import { HeaderBar } from "./HeaderBar";
 
 /**
  * Wraps every signed-in screen. Three jobs:
