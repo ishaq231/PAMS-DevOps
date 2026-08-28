@@ -1,5 +1,4 @@
-import type { Role } from "./lib/types";
-
+import type { Role } from "./types";
 /**
  * Ported verbatim from _get_nav_items() in src/gui/main_window.py.
  * Order and labels match the desktop app exactly — don't "tidy" them.
