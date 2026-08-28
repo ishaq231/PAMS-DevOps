@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cityscape } from "./Cityscape";
-import { useAuth } from "./auth";
-import { ApiError } from "./api";
+import { Cityscape } from "../components/Cityscape";
+import { useAuth } from "../lib/auth";
+import { ApiError } from "../lib/api";
 
 export function Login() {
   const { login } = useAuth();

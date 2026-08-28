@@ -1,4 +1,4 @@
-import type { Role } from "./types";
+import type { Role } from "./lib/types";
 
 /**
  * Ported verbatim from _get_nav_items() in src/gui/main_window.py.
