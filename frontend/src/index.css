@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/* PAMS design tokens, ported directly from PAMSTheme in src/gui/main_window.py.
+   Every colour used in a component must come from here, never a raw hex. */
+@theme {
+  --color-bg-darkest: #0f1923;
+  --color-bg-dark: #15202e;
+  --color-bg-sidebar: #1a2736;
+  --color-bg-card: #1e2d3d;
+  --color-bg-hover: #253647;
+  --color-bg-surface: #f0f4f8;
+  --color-bg-white: #ffffff;
+
+  --color-accent: #00d4aa;
+  --color-accent-hover: #00e8bb;
+  --color-accent-dim: #00b894;
+
+  --color-success: #2ecc71;
+  --color-warning: #f39c12;
+  --color-danger: #e74c3c;
+  --color-info: #3498db;
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #8899aa;
+  --color-text-muted: #7e92a5;
+  --color-text-dark: #1a2736;
+  --color-text-body: #4a5568;
+
+  --color-border-light: #e2e8f0;
+
+  --radius-card: 14px;
+  --radius-btn: 10px;
+
+  --spacing-sidebar: 260px;
+  --spacing-sidebar-collapsed: 72px;
+  --spacing-header: 64px;
+
+  --font-sans: "Segoe UI", -apple-system, "Inter", system-ui, sans-serif;
+}
+
+/* Values PAMSTheme defines as rgba rather than solid hex. Tailwind's @theme
+   generates utilities from colour tokens, but these two are used in specific
+   one-off positions, so they stay as plain custom properties. */
+:root {
+  --accent-glow: rgba(0, 212, 170, 0.15);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --pams-shadow: rgba(0, 0, 0, 0.25);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-surface);
+}
+
+/* Matches the thin scrollbar treatment from PAMSTheme.global_stylesheet() */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
