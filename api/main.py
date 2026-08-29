@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="PAMS API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "https://pams-devops-1.onrender.com/login"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
