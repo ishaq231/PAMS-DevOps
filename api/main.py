@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from .auth_routes import router as auth_router
 from .tenant_routes import router as tenant_router
-from .fianance_routes import router as finance_router
+from .finance_routes import router as finance_router
 from .frontdesk_routes import router as frontdesk_router
 from .location_routes import router as location_router
 from .apartment_routes import router as apartment_router
