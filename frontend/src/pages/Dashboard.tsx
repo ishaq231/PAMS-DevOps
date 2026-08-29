@@ -1,5 +1,5 @@
 import { api } from "../lib/api";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/useAuth";
 import { useApi } from "../lib/useApi";
 import { StatCard, ErrorState, LoadingState } from "../components/ui";
 import type {

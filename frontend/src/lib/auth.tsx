@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -15,29 +13,26 @@ import {
   setUnauthorizedHandler,
 } from "./api";
 import type { CurrentUser, LoginResponse } from "./types";
+import { AuthContext } from "./authContext";
 
 /**
  * React Context is how a value gets shared across the whole component tree
  * without passing it down through every level as props. Login state is needed
  * by the sidebar, the header, and every protected page, so it belongs here
  * rather than being threaded through a dozen components.
+ *
+ * This file exports only the AuthProvider component. The context itself
+ * (authContext.ts) and the useAuth hook (useAuth.ts) are deliberately in
+ * separate files — see the note in either for why.
  */
-
-type AuthState = {
-  user: CurrentUser | null;
-  loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
-};
-
-const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CurrentUser | null>(null);
-  // Starts true because on a page refresh we hold a token but don't yet know
-  // if it's still valid. Rendering routes before that check finishes would
-  // briefly bounce a logged-in user to the login screen.
-  const [loading, setLoading] = useState(true);
+  // True only when a token actually exists to verify. Computing this from
+  // getToken() up front — rather than starting true and setting it false in
+  // an effect — means there's nothing to correct after the first render when
+  // there's no token: we already know synchronously there's nothing to check.
+  const [loading, setLoading] = useState(() => Boolean(getToken()));
 
   const logout = useCallback(() => {
     clearToken();
@@ -54,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!getToken()) {
-      setLoading(false);
+      // loading's initial value already accounts for this case — nothing to do.
       return;
     }
     // We could decode the JWT locally, but asking the server is the honest
@@ -85,12 +80,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth(): AuthState {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used inside an AuthProvider");
-  }
-  return ctx;
 }

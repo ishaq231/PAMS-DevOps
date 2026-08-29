@@ -1,9 +1,14 @@
 /**
- * These mirror what the API actually returns, which is whatever the model
- * classes' to_dict() produces. Field names come from the SQL SELECT aliases in
- * src/database/*_models.py, NOT from the PyQt6 form field labels.
+ * These mirror what the API actually returns: whatever to_dict() produces,
+ * which is the SELECT aliases from src/database/*_models.py.
  *
- * Anything marked "verify" hasn't been confirmed against a live response yet.
+ * Verified against the SQL directly — several of these are NOT the snake_case
+ * you'd expect (leaseID, tenantID, assignedStaff_id), because the original
+ * schema mixes conventions. Don't "tidy" them or the fields render blank.
+ *
+ * Note also that list endpoints return extra JOINed display fields
+ * (tenant_name, apartment_number, location) that the single-record endpoints
+ * don't, which is why those are optional.
  */
 
 export type Role =
@@ -14,7 +19,6 @@ export type Role =
   | "Maintenance Staff"
   | "Tenant";
 
-/** Decoded from the JWT / returned by GET /me. */
 export type CurrentUser = {
   user_id: number;
   name: string;
@@ -23,19 +27,18 @@ export type CurrentUser = {
   location_name: string | null;
 };
 
-/** POST /login response shape. */
 export type LoginResponse = {
   access_token: string;
   token_type: string;
   user: CurrentUser;
 };
 
-/** GET /tenants — note list_tenants() copies user_id into tenant_id, so both
- *  are present here. GET /tenants/{id} returns a User row and does NOT include
- *  tenant_id, which is why it's optional. */
+/** GET /tenants — list_tenants() copies user_id into tenant_id.
+ *  GET /tenants/{id} returns a User row, which has no tenant_id. */
 export type Tenant = {
   user_id: number;
   tenant_id?: number;
+  username?: string;
   fname: string;
   lname: string;
   email: string;
@@ -46,6 +49,8 @@ export type Tenant = {
   references: string | null;
 };
 
+/** GET /users. `password` appears as null because User.__init__ defines it and
+ *  to_dict() returns everything on the instance — the hash is never selected. */
 export type User = {
   user_id: number;
   username: string;
@@ -58,8 +63,11 @@ export type User = {
   occupation: string | null;
   ni_number: string | null;
   references: string | null;
+  password?: null;
 };
 
+/** GET /staff — note user_role (the account role) and staff_role (the job
+ *  title) are two different columns aliased apart in the SQL. */
 export type StaffMember = {
   user_id: number;
   employee_id: number;
@@ -93,26 +101,39 @@ export type Location = {
   manager: string;
 };
 
+/** GET /leases uses camel-ish IDs from the original schema. */
 export type Lease = {
   leaseID: number;
-  tenant_id: number;
-  apartment_id: number;
+  tenantID?: number;
+  apartmentID?: number;
   start_date: string;
   end_date: string;
   monthly_rent: number;
-  deposit: number;
-  term_months: number;
   status: string;
+  deposit_amount?: number;
+  lease_term_months?: number;
+  termination_date?: string | null;
+  early_termination_notice?: string | null;
+  termination_penalty_percent?: number | null;
+  // JOINed display fields, present on the full list only
+  tenant_name?: string;
+  apartment_number?: string;
+  location?: string;
 };
 
+/** GET /invoices — the FK is leaseID, not lease_id. */
 export type Invoice = {
   invoiceID: number;
-  lease_id: number;
+  leaseID: number;
   amount: number;
   due_date: string;
   issue_date: string;
   description: string | null;
   status: string;
+  tenant_id?: number;
+  tenant_name?: string;
+  apartment_number?: string;
+  location?: string;
 };
 
 export type Payment = {
@@ -132,6 +153,8 @@ export type Complaint = {
   description: string;
   status: string;
   date_filed: string;
+  tenant_name?: string;
+  location?: string;
 };
 
 export type ComplaintStats = Record<string, number>;
@@ -145,17 +168,26 @@ export type Enquiry = {
   date_logged: string;
 };
 
+/** GET /maintenance — assignedStaff_id keeps the original schema's casing.
+ *  The list query aliases the reporting tenant as tenant_id. */
 export type MaintenanceRequest = {
   request_id: number;
   apartment_id: number;
-  tenant_id: number;
   description: string;
   priority: string;
   category: string;
   status: string;
-  assigned_staff_id: number | null;
+  report_date: string | null;
   scheduled_date: string | null;
+  resolved_date: string | null;
   cost: number | null;
+  assignedStaff_id: number | null;
+  tenant_id?: number;
+  reportedByTenant_id?: number;
+  tenant_name?: string;
+  staff_name?: string;
+  apartment_number?: string;
+  location?: string;
 };
 
 export type MaintenanceLog = {
@@ -167,4 +199,13 @@ export type MaintenanceLog = {
   parts_used: string | null;
   cost_breakdown: string | null;
   technician_notes: string | null;
+};
+
+/** GET /maintenance/staff returns a trimmed shape, not full StaffMember. */
+export type MaintenanceStaff = {
+  user_id: number;
+  fname?: string;
+  lname?: string;
+  name?: string;
+  role?: string;
 };

@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/useAuth";
 import { getNavItems } from "../lib/nav";
 import { Sidebar } from "./Sidebar";
 import { HeaderBar } from "./HeaderBar";

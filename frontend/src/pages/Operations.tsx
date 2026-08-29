@@ -3,11 +3,8 @@ import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import type { Apartment, Complaint, Location, Payment } from "../lib/types";
 import { Badge, DataTable, type Column } from "../components/DataTable";
-import {
-  PageHeader,
-  formatDate,
-  formatMoney,
-} from "../components/PageHeader";
+import { PageHeader } from "../components/PageHeader";
+import { formatDate, formatMoney } from "../lib/format";
 import {
   Modal,
   NumberInput,

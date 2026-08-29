@@ -3,7 +3,8 @@ import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import type { Tenant } from "../lib/types";
 import { DataTable, type Column } from "../components/DataTable";
-import { PageHeader, formatDate, fullName } from "../components/PageHeader";
+import { PageHeader } from "../components/PageHeader";
+import { formatDate, fullName } from "../lib/format";
 import {
   Modal,
   PrimaryButton,

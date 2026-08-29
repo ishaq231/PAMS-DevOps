@@ -31,6 +31,14 @@ export function useApi<T>(
     // React warning and a small memory leak, so we drop the result instead.
     let cancelled = false;
 
+    // This is React's own documented pattern for fetching in an effect
+    // (react.dev, "You Might Not Need an Effect" — the person-bio example
+    // resets state the same way before the fetch starts). It's disabled here
+    // deliberately, not as a blanket suppression: unlike the loading flag in
+    // auth.tsx, this effect re-runs on every dependency change and every
+    // reload(), so there's no one-time initial value that could replace it —
+    // the reset genuinely has to happen again on each run.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
 

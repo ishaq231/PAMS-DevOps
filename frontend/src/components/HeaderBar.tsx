@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/useAuth";
 import { getNavLabel } from "../lib/nav";
 
 /** Port of HeaderBar from src/gui/main_window.py — 64px tall, white, with the

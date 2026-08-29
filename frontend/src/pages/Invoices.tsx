@@ -3,11 +3,8 @@ import { api } from "../lib/api";
 import { useApi } from "../lib/useApi";
 import type { Invoice } from "../lib/types";
 import { Badge, DataTable, type Column } from "../components/DataTable";
-import {
-  PageHeader,
-  formatDate,
-  formatMoney,
-} from "../components/PageHeader";
+import { PageHeader } from "../components/PageHeader";
+import { formatDate, formatMoney } from "../lib/format";
 import {
   Modal,
   NumberInput,
@@ -39,7 +36,7 @@ export function Invoices() {
 
   const columns: Column<Invoice>[] = [
     { header: "ID", value: (i) => i.invoiceID, className: "w-16" },
-    { header: "Lease", value: (i) => i.lease_id, className: "w-20" },
+    { header: "Lease", value: (i) => i.leaseID, className: "w-20" },
     { header: "Amount", value: (i) => formatMoney(i.amount) },
     { header: "Issued", value: (i) => formatDate(i.issue_date) },
     { header: "Due", value: (i) => formatDate(i.due_date) },

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Cityscape } from "../components/Cityscape";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/useAuth";
 import { ApiError } from "../lib/api";
 
 export function Login() {

@@ -1,4 +1,4 @@
-name: Pytest
+name: CI
 
 on:
   push:
@@ -9,7 +9,9 @@ on:
       - "**"
 
 jobs:
+  # Existing Python suite — unchanged apart from the job name.
   test:
+    name: Backend tests
     runs-on: ubuntu-latest
 
     steps:
@@ -35,3 +37,57 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: pytest
+
+  # New: catches TypeScript and lint errors before they reach a deploy.
+  # A type error here is exactly the kind of field-name mistake that would
+  # otherwise render a blank column in production.
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # npm ci installs exactly what's in package-lock.json rather than
+      # resolving fresh versions, so CI builds what you built locally.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # `npm run build` runs tsc then vite build, so this fails on any type
+      # error — that's the real value of this job.
+      - name: Type-check and build
+        run: npm run build
+
+  # Both jobs must pass before Docker images are built. Render's
+  # "After CI Checks Pass" setting waits on these same checks.
+  docker:
+    name: Docker build
+    needs: [test, frontend]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -t pams-api:ci .
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            --build-arg VITE_API_URL=${{ vars.VITE_API_URL || 'http://localhost:8000' }} \
+            -t pams-web:ci ./frontend
