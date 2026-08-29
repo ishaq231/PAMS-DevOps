@@ -80,7 +80,7 @@ export async function request<T>(
 
   if (response.status === 401) {
     onUnauthorized?.();
-    throw new ApiError(401, "Your session has expired. Log in again.");
+    throw new ApiError(401, "Invalid Username or Password.");
   }
 
   if (!response.ok) {
